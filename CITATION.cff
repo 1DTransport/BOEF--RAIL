@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use BOEF, please cite the author and refer to the project website."
+title: "BOEF"
+authors:
+  - family-names: "Yoldashkhan"
+    given-names: "Mahan"
+url: "https://www.1dtransport.com"
+license: "MIT"
+abstract: "BOEF is an open-source desktop engineering application for railway track analysis and beam-on-elastic-foundation design screening."

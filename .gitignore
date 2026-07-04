@@ -1,0 +1,70 @@
+# =========================
+# Python virtual environments
+# =========================
+.venv/
+.venv*/
+env/
+ENV/
+
+# =========================
+# Python cache / bytecode
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =========================
+# Build & packaging artefacts
+# =========================
+build/
+dist/
+*.egg-info/
+presentation-workspace/
+node_modules/
+
+# =========================
+# Test / coverage artefacts
+# =========================
+.coverage
+.coverage.*
+.pytest_cache/
+
+# =========================
+# Qt / PySide artefacts
+# =========================
+*.qmlc
+*.jsc
+
+# =========================
+# IDE / OS noise
+# =========================
+.DS_Store
+.vscode/
+.idea/
+
+# =========================
+# Local documents / exports
+# =========================
+Paper/
+output/
+tmp/
+python-app/output/
+python-app/dist/
+python-app/transition_*.csv
+*.sqlite
+*.sqlite3
+*.db
+*.pdf
+*.docx
+*.pptx
+*.log
+*.dataless.*
+
+# =========================
+# Local agent/private workspace files
+# =========================
+.codex/private/
+python-app/.codex/private/
+*.local.md
+python.md
+python-app/python.md

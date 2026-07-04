@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "boef-python-app"
+version = "0.1.0"
+description = "BOEF track analysis desktop app (PySide6 + SQLAlchemy)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Mahan Yoldashkhan / 1D Transport" }]
+dependencies = [
+  "PySide6==6.11.0",
+  "SQLAlchemy==2.0.36",
+  "alembic==1.13.2",
+  "matplotlib==3.9.2",
+]
+
+[project.urls]
+Homepage = "https://www.1dtransport.com"
+
+[project.optional-dependencies]
+dev = [
+  "pytest==8.3.3",
+]
+
+[project.scripts]
+boef-app = "app.main:run"
+boef-core = "core.cli:main"
+boef-db = "db.cli:main"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.setuptools]
+package-dir = {"" = "."}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*", "core*", "db*"]

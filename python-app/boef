@@ -1,0 +1,175 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+cd "$SCRIPT_DIR"
+
+VENV_DIR="${VENV_DIR:-.venv}"
+PYTHON_BIN="${PYTHON_BIN:-python3.11}"
+
+if ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
+  echo "Error: $PYTHON_BIN not found. Install Python 3.11+ and try again." >&2
+  exit 1
+fi
+
+create_venv() {
+  "$PYTHON_BIN" -m venv "$VENV_DIR"
+}
+
+backup_broken_venv() {
+  local backup_dir
+  backup_dir="${VENV_DIR}.broken.$(date +%Y%m%d%H%M%S)"
+  if [ -e "$backup_dir" ]; then
+    backup_dir="${backup_dir}.$$"
+  fi
+  echo "Warning: $VENV_DIR is not healthy. Moving it to $backup_dir and rebuilding." >&2
+  mv "$VENV_DIR" "$backup_dir"
+}
+
+venv_command_probe() {
+  local timeout_seconds="$1"
+  shift
+  "$PYTHON_BIN" - "$VENV_PY" "$timeout_seconds" "$@" <<'PY'
+import subprocess
+import sys
+
+python_bin = sys.argv[1]
+timeout_seconds = float(sys.argv[2])
+args = sys.argv[3:]
+
+try:
+    result = subprocess.run(
+        [python_bin, *args],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        timeout=timeout_seconds,
+    )
+except (OSError, subprocess.TimeoutExpired):
+    raise SystemExit(1)
+
+raise SystemExit(result.returncode)
+PY
+}
+
+if [ ! -d "$VENV_DIR" ]; then
+  create_venv
+fi
+
+VENV_PY="$VENV_DIR/bin/python"
+VENV_PIP="$VENV_DIR/bin/pip"
+
+if [ ! -x "$VENV_PY" ]; then
+  backup_broken_venv
+  create_venv
+  VENV_PY="$VENV_DIR/bin/python"
+  VENV_PIP="$VENV_DIR/bin/pip"
+fi
+
+if [ ! -x "$VENV_PIP" ]; then
+  "$VENV_PY" -m ensurepip --upgrade
+fi
+
+if ! venv_command_probe 20 -m pip --version; then
+  backup_broken_venv
+  create_venv
+  VENV_PY="$VENV_DIR/bin/python"
+  VENV_PIP="$VENV_DIR/bin/pip"
+  "$VENV_PY" -m ensurepip --upgrade
+fi
+
+PYPROJECT_HASH_FILE="$VENV_DIR/.boef_pyproject_hash"
+XATTR_STAMP_FILE="$VENV_DIR/.boef_xattr_cleaned"
+CURRENT_HASH=$("$PYTHON_BIN" - <<'PY'
+import hashlib
+from pathlib import Path
+
+pyproject = Path("pyproject.toml")
+if not pyproject.exists():
+    raise SystemExit("pyproject.toml not found.")
+
+print(hashlib.sha256(pyproject.read_bytes()).hexdigest())
+PY
+)
+INSTALLED_HASH=""
+if [ -f "$PYPROJECT_HASH_FILE" ]; then
+  INSTALLED_HASH=$(cat "$PYPROJECT_HASH_FILE")
+fi
+
+if [ "$CURRENT_HASH" != "$INSTALLED_HASH" ]; then
+  "$VENV_PIP" install --no-build-isolation -e ".[dev]"
+  echo "$CURRENT_HASH" > "$PYPROJECT_HASH_FILE"
+  rm -f "$XATTR_STAMP_FILE"
+fi
+
+XATTR_CLEANED_HASH=""
+if [ -f "$XATTR_STAMP_FILE" ]; then
+  XATTR_CLEANED_HASH=$(cat "$XATTR_STAMP_FILE")
+fi
+
+if command -v xattr >/dev/null 2>&1 && [ "$XATTR_CLEANED_HASH" != "$CURRENT_HASH" ]; then
+  # macOS may attach quarantine/provenance metadata to wheel files. In this
+  # project that can make imports such as numpy/PySide6 take minutes at app
+  # startup, so strip extended attributes once after dependency changes.
+  xattr -cr "$VENV_DIR" >/dev/null 2>&1 || true
+  echo "$CURRENT_HASH" > "$XATTR_STAMP_FILE"
+fi
+
+SYSTEM_ARCH=$(uname -m)
+PYTHON_ARCH=$("$VENV_PY" - <<'PY'
+import platform
+print(platform.machine())
+PY
+)
+if [ "$SYSTEM_ARCH" != "$PYTHON_ARCH" ]; then
+  echo "Error: Python architecture ($PYTHON_ARCH) does not match system ($SYSTEM_ARCH)." >&2
+  echo "Delete $VENV_DIR and rerun with PYTHON_BIN pointing to a native interpreter." >&2
+  exit 1
+fi
+
+QT_PLUGIN_BASE="$VENV_DIR/lib/python3.11/site-packages/PySide6/Qt/plugins"
+if [ -d "$QT_PLUGIN_BASE" ]; then
+  export QT_PLUGIN_PATH="$QT_PLUGIN_BASE"
+  export QT_QPA_PLATFORM_PLUGIN_PATH="$QT_PLUGIN_BASE/platforms"
+fi
+
+usage() {
+  cat <<'USAGE'
+Usage: ./boef <command> [args]
+
+Commands:
+  run                 Start the GUI (python -m app)
+  core [args]         Run the core CLI (python -m core ...)
+  db [args]           Initialize/migrate the database (python -m db ...)
+  test [args]         Run tests (pytest ...)
+
+Environment variables:
+  VENV_DIR   Path to the virtualenv (default: .venv)
+  PYTHON_BIN Python interpreter to bootstrap the venv (default: python3.11)
+USAGE
+}
+
+COMMAND="${1:-}"
+shift || true
+
+case "$COMMAND" in
+  run)
+    "$VENV_PY" -m app "$@"
+    ;;
+  core)
+    "$VENV_PY" -m core "$@"
+    ;;
+  db)
+    "$VENV_PY" -m db "$@"
+    ;;
+  test)
+    "$VENV_PY" -m pytest "$@"
+    ;;
+  ""|-h|--help|help)
+    usage
+    ;;
+  *)
+    echo "Unknown command: $COMMAND" >&2
+    usage >&2
+    exit 1
+    ;;
+esac

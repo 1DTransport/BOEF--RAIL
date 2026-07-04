@@ -1,0 +1,35 @@
+name: BOEF Python App Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Python 3.11 tests
+    runs-on: macos-14
+
+    defaults:
+      run:
+        working-directory: python-app
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: python-app/pyproject.toml
+
+      - name: Install BOEF and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Run test suite
+        run: python -m pytest -p no:cacheprovider
