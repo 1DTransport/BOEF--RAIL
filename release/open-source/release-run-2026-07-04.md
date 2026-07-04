@@ -12,7 +12,8 @@ This file records progress against `PUBLIC_RELEASE_PLAN.md`.
 - `python-app/.codex/skills/boef-analysis-integrity/SKILL.md` was inspected and contains engineering verification guardrails; it is copied intentionally as public agent guidance.
 - Clean export created at `/tmp/boef-public-release-20260704e`.
 - Clean export branch: `main`.
-- Clean export has one initial public-release commit. Check the exact hash with `git -C /tmp/boef-public-release-20260704e log --oneline --all`.
+- Clean export was published to the user-created public repository `https://github.com/1DTransport/BOEF--RAIL`.
+- Initial public-release commit: `22267d37ede45ff81a835d10762799a5be1a419c`.
 - Clean export `git status --short`: no output.
 - Full exported BOEF test suite passed: `214 passed, 1 warning in 38.31s`.
 
@@ -20,18 +21,18 @@ This file records progress against `PUBLIC_RELEASE_PLAN.md`.
 
 | Feature | Status | Evidence |
 | --- | --- | --- |
-| 1 - Release Scope Freeze | In progress | Branch identified as `main`; full dirty-tree status blocked by Git/filesystem hang. |
+| 1 - Release Scope Freeze | Complete for public export | Branch identified as `main`; full private dirty-tree status was blocked by Git/filesystem hang, so the release used a fresh allow-list export instead of private Git history. |
 | 2 - Public and Private File Boundary | Complete for local export | `.gitignore` excludes `python.md`; export scan found no `python.md`, databases, DOCX/PDF/PPTX, paper, output, presentation, dist, or build paths. |
 | 3 - Licence, Attribution, and Citation | Complete for local export | Export contains MIT `LICENSE`, `NOTICE`, `CITATION.cff`, README attribution, and `python-app/pyproject.toml` MIT/homepage metadata. |
 | 4 - Agent Instruction Public Hardening | Complete for local export | Root `AGENTS.md` states `python.md` is private and keeps `AGENTS.md` files public. |
 | 5 - Secret and Private Data Scan | Complete with limitation | Keyword scan found only release/security guidance text and app cache variable names; `gitleaks` is not installed. |
 | 6 - Functionality Preservation Test Gate | Complete for local export | Full exported test suite passed with `214 passed, 1 warning`. Preferred private-tree helper failed during `.venv_run` rebuild. |
-| 7 - Clean Public Repository Export | Complete locally | `/tmp/boef-public-release-20260704e` is a fresh Git repo on `main` with one initial public-release commit. |
-| 8 - Public GitHub Repository Creation | Blocked pending approval/auth | Publication runbook added; still requires GitHub repo name, authenticated network action, and explicit approval before push. |
-| 9 - GitHub Safety and Collaboration Settings | Partly complete locally | CI workflow added at `.github/workflows/python-app-tests.yml`; repo settings still require public GitHub repository. |
-| 10 - First Public Release Tag | Partly complete locally | Draft notes added at `release/open-source/v0.1.0-public-release-notes.md`; tag/release still requires public GitHub repository. |
-| 11 - `1Dtransport.com` Linkage | Blocked pending website/repo decision | Requires website edit path or external website access. |
-| 12 - Ongoing Private/Public Workflow | In progress | Plan documents private/public split; needs final README or workflow note after export. |
+| 7 - Clean Public Repository Export | Complete | `/tmp/boef-public-release-20260704e` is a fresh Git repo on `main`, created without the private repository history. |
+| 8 - Public GitHub Repository Creation | Complete | User-created public repository verified and pushed at `https://github.com/1DTransport/BOEF--RAIL`. Existing private `1DTransport/BOEF` was not changed. |
+| 9 - GitHub Safety and Collaboration Settings | Partly complete | CI workflow added at `.github/workflows/python-app-tests.yml`; GitHub Issues enabled. Security/dependabot/branch-protection settings require final GitHub-side verification. |
+| 10 - First Public Release Tag | Ready | Draft notes added at `release/open-source/v0.1.0-public-release-notes.md`; release tag to be created after this publication-status update is pushed. |
+| 11 - `1Dtransport.com` Linkage | External follow-up | Requires website edit path or external website access. |
+| 12 - Ongoing Private/Public Workflow | Complete for release | Plan documents the private/public split and warns not to push private history to the public repository. |
 
 ## Commands Attempted
 
@@ -119,10 +120,20 @@ The export tool:
 
 Note: an earlier `rsync`-based export script under `release/open-source/` failed on this macOS filesystem with `mmap: Operation canceled`. The working export script now uses plain file copy logic from `scripts/create_public_export.sh`.
 
-## Remaining Blockers Before Public Push
+## Publication Result
 
-- GitHub repository creation, remote configuration, push, repository settings, first release tag, and `1Dtransport.com` linkage remain external steps.
-- The clean export includes a GitHub Actions workflow and draft release notes, but those cannot be verified on GitHub until the repository exists.
-- Publication commands and settings are documented in `release/open-source/github-publication-runbook.md`.
-- Do not push or change repository visibility until the user confirms the public GitHub repository name and approves publishing.
-- Optional stronger scan: install and run `gitleaks` before public push.
+- Preferred repo name `1DTransport/BOEF` already existed and remained private.
+- A temporary fallback repo, `https://github.com/1DTransport/boef-1dtransport`, was created before the user advised the final repo name.
+- Official public release repo: `https://github.com/1DTransport/BOEF--RAIL`.
+- Public repo visibility verified as `PUBLIC`.
+- Default branch verified as `main`.
+- Remote configured in the clean export: `https://github.com/1DTransport/BOEF--RAIL.git`.
+- Existing private repository visibility was not changed.
+
+## Remaining Follow-ups
+
+- Verify the GitHub Actions run after GitHub completes the first CI execution.
+- Create the first public release tag after this publication-status update is pushed.
+- Enable or verify Dependabot alerts, secret scanning, and branch protection where available for the GitHub account/repository.
+- Update `https://www.1dtransport.com` with the public repository link, MIT licence notice, citation guidance, and engineering-use disclaimer.
+- Optional stronger scan: install and run `gitleaks` when available.
