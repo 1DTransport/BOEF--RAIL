@@ -29,8 +29,8 @@ This file records progress against `PUBLIC_RELEASE_PLAN.md`.
 | 6 - Functionality Preservation Test Gate | Complete for local export | Full exported test suite passed with `214 passed, 1 warning`. Preferred private-tree helper failed during `.venv_run` rebuild. |
 | 7 - Clean Public Repository Export | Complete | `/tmp/boef-public-release-20260704e` is a fresh Git repo on `main`, created without the private repository history. |
 | 8 - Public GitHub Repository Creation | Complete | User-created public repository verified and pushed at `https://github.com/1DTransport/BOEF--RAIL`. Existing private `1DTransport/BOEF` was not changed. |
-| 9 - GitHub Safety and Collaboration Settings | Partly complete | CI workflow added at `.github/workflows/python-app-tests.yml`; GitHub Issues enabled. Security/dependabot/branch-protection settings require final GitHub-side verification. |
-| 10 - First Public Release Tag | Ready | Draft notes added at `release/open-source/v0.1.0-public-release-notes.md`; release tag to be created after this publication-status update is pushed. |
+| 9 - GitHub Safety and Collaboration Settings | Partly complete | CI workflow added and first GitHub Actions run passed; GitHub Issues enabled; Dependabot vulnerability alerts enabled. Secret scanning and branch protection remain manual/plan-sensitive follow-ups. |
+| 10 - First Public Release Tag | Complete | Public release created at `https://github.com/1DTransport/BOEF--RAIL/releases/tag/v0.1.0-public`. |
 | 11 - `1Dtransport.com` Linkage | External follow-up | Requires website edit path or external website access. |
 | 12 - Ongoing Private/Public Workflow | Complete for release | Plan documents the private/public split and warns not to push private history to the public repository. |
 
@@ -129,11 +129,13 @@ Note: an earlier `rsync`-based export script under `release/open-source/` failed
 - Default branch verified as `main`.
 - Remote configured in the clean export: `https://github.com/1DTransport/BOEF--RAIL.git`.
 - Existing private repository visibility was not changed.
+- GitHub Actions run `BOEF Python App Tests` completed successfully on `main`.
+- GitHub Issues enabled.
+- Dependabot vulnerability alerts enabled.
+- Public release created: `https://github.com/1DTransport/BOEF--RAIL/releases/tag/v0.1.0-public`.
 
 ## Remaining Follow-ups
 
-- Verify the GitHub Actions run after GitHub completes the first CI execution.
-- Create the first public release tag after this publication-status update is pushed.
-- Enable or verify Dependabot alerts, secret scanning, and branch protection where available for the GitHub account/repository.
+- Enable or verify secret scanning and branch protection where available for the GitHub account/repository.
 - Update `https://www.1dtransport.com` with the public repository link, MIT licence notice, citation guidance, and engineering-use disclaimer.
 - Optional stronger scan: install and run `gitleaks` when available.
